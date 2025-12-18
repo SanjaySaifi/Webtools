@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Video Frame Extractor</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #1e1e1e;
+    color: #ffffff;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+#top-bar, #controls {
+    flex: 0 0 50px;
+    background: #2b2b2b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+#info {
+    flex: 0 0 40px;
+    background: #1a1a1a;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+#viewer {
+    flex: 1;
+    min-height: 0;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+button, input {
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+canvas {
+    display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+    <!-- Upload -->
+    <div id="top-bar">
+        <input type="file" accept="video/mp4" id="videoInput">
+    </div>
+
+    <!-- Info -->
+    <div id="info" id="infoBar">
+        <span id="videoSize">Video: —</span>
+        <span id="videoRes">Resolution: —</span>
+        <span id="frameSize">Frame Export: —</span>
+    </div>
+
+    <!-- Viewer -->
+    <div id="viewer">
+        <video id="video" controls></video>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+        <button onclick="prevFrame()">⏮ Prev</button>
+        <button onclick="nextFrame()">⏭ Next</button>
+        <button onclick="exportFrame()">📸 Export (BMP)</button>
+    </div>
+
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const videoSizeEl = document.getElementById("videoSize");
+const videoResEl = document.getElementById("videoRes");
+const frameSizeEl = document.getElementById("frameSize");
+
+let frameRate = 30;
+
+document.getElementById("videoInput").addEventListener("change", function () {
+    const file = this.files[0];
+    const url = URL.createObjectURL(file);
+    video.src = url;
+
+    // Show video file size
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    videoSizeEl.textContent = `Video: ${sizeMB} MB`;
+
+    video.onloadedmetadata = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        videoResEl.textContent =
+            `Resolution: ${video.videoWidth} × ${video.videoHeight}`;
+
+        updateFrameSizeInfo();
+    };
+});
+
+function updateFrameSizeInfo() {
+    // BMP = uncompressed RGB (3 bytes per pixel)
+    const bytes = canvas.width * canvas.height * 3;
+    const sizeMB = (bytes / (1024 * 1024)).toFixed(2);
+
+    frameSizeEl.textContent =
+        `Frame Export: ${canvas.width}×${canvas.height} ≈ ${sizeMB} MB (BMP)`;
+}
+
+function drawFrame() {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+}
+
+video.addEventListener("seeked", drawFrame);
+
+function nextFrame() {
+    video.currentTime += 1 / frameRate;
+}
+
+function prevFrame() {
+    video.currentTime -= 1 / frameRate;
+}
+
+function exportFrame() {
+    drawFrame();
+
+    const link = document.createElement("a");
+    link.download = `frame_${canvas.width}x${canvas.height}.bmp`;
+    link.href = canvas.toDataURL("image/bmp"); // UNCOMPRESSED
+    link.click();
+}
+</script>
+
+</body>
+</html>
