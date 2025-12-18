@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Video Frame Extractor</title>
 
 <style>
@@ -21,25 +22,26 @@ html, body {
     height: 100vh;
 }
 
-#top-bar, #controls {
-    flex: 0 0 50px;
+/* TOP BAR */
+#top-bar {
     background: #2b2b2b;
+    padding: 6px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 15px;
 }
 
+/* INFO BAR */
 #info {
-    flex: 0 0 40px;
     background: #1a1a1a;
-    font-size: 13px;
+    font-size: 12px;
+    padding: 4px 8px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
+/* VIDEO AREA */
 #viewer {
     flex: 1;
     min-height: 0;
@@ -55,13 +57,51 @@ video {
     object-fit: contain;
 }
 
-button, input {
-    padding: 6px 12px;
-    font-size: 14px;
+/* CONTROLS */
+#controls {
+    background: #2b2b2b;
+    padding: 6px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
+button, input {
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+/* CANVAS */
 canvas {
     display: none;
+}
+
+/* 📱 MOBILE OPTIMIZATION */
+@media (max-width: 768px) {
+
+    #info {
+        font-size: 11px;
+        text-align: center;
+    }
+
+    button {
+        flex: 1 1 30%;
+        font-size: 13px;
+        padding: 12px;
+    }
+
+    #controls {
+        gap: 6px;
+    }
+}
+
+/* 📱 LANDSCAPE MOBILE */
+@media (max-height: 500px) {
+    #info {
+        display: none;
+    }
 }
 </style>
 </head>
@@ -70,24 +110,20 @@ canvas {
 
 <div id="app">
 
-    <!-- Upload -->
     <div id="top-bar">
         <input type="file" accept="video/mp4" id="videoInput">
     </div>
 
-    <!-- Info -->
-    <div id="info" id="infoBar">
+    <div id="info">
         <span id="videoSize">Video: —</span>
         <span id="videoRes">Resolution: —</span>
         <span id="frameSize">Frame Export: —</span>
     </div>
 
-    <!-- Viewer -->
     <div id="viewer">
-        <video id="video" controls></video>
+        <video id="video" controls playsinline></video>
     </div>
 
-    <!-- Controls -->
     <div id="controls">
         <button onclick="prevFrame()">⏮ Prev</button>
         <button onclick="nextFrame()">⏭ Next</button>
@@ -111,10 +147,8 @@ let frameRate = 30;
 
 document.getElementById("videoInput").addEventListener("change", function () {
     const file = this.files[0];
-    const url = URL.createObjectURL(file);
-    video.src = url;
+    video.src = URL.createObjectURL(file);
 
-    // Show video file size
     const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
     videoSizeEl.textContent = `Video: ${sizeMB} MB`;
 
@@ -130,10 +164,8 @@ document.getElementById("videoInput").addEventListener("change", function () {
 });
 
 function updateFrameSizeInfo() {
-    // BMP = uncompressed RGB (3 bytes per pixel)
     const bytes = canvas.width * canvas.height * 3;
     const sizeMB = (bytes / (1024 * 1024)).toFixed(2);
-
     frameSizeEl.textContent =
         `Frame Export: ${canvas.width}×${canvas.height} ≈ ${sizeMB} MB (BMP)`;
 }
@@ -154,10 +186,9 @@ function prevFrame() {
 
 function exportFrame() {
     drawFrame();
-
     const link = document.createElement("a");
     link.download = `frame_${canvas.width}x${canvas.height}.bmp`;
-    link.href = canvas.toDataURL("image/bmp"); // UNCOMPRESSED
+    link.href = canvas.toDataURL("image/bmp");
     link.click();
 }
 </script>
