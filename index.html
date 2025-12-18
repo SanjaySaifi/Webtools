@@ -6,6 +6,10 @@
 <title>Video Frame Extractor</title>
 
 <style>
+:root {
+    --vh: 1vh;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -16,32 +20,31 @@ html, body {
     color: #ffffff;
 }
 
+/* APP */
 #app {
+    height: calc(var(--vh) * 100);
     display: flex;
     flex-direction: column;
-    height: 100vh;
 }
 
 /* TOP BAR */
 #top-bar {
     background: #2b2b2b;
     padding: 6px;
-    display: flex;
-    justify-content: center;
+    text-align: center;
 }
 
 /* INFO BAR */
 #info {
     background: #1a1a1a;
     font-size: 12px;
-    padding: 4px 8px;
+    padding: 4px;
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
-    gap: 6px;
 }
 
-/* VIDEO AREA */
+/* VIEWER */
 #viewer {
     flex: 1;
     min-height: 0;
@@ -57,20 +60,20 @@ video {
     object-fit: contain;
 }
 
-/* CONTROLS */
+/* CONTROLS — ALWAYS VISIBLE */
 #controls {
     background: #2b2b2b;
-    padding: 6px;
+    padding: 8px;
     display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 8px;
 }
 
 button, input {
-    padding: 10px 14px;
+    padding: 12px;
     font-size: 14px;
     border-radius: 6px;
+    flex: 1;
 }
 
 /* CANVAS */
@@ -78,26 +81,7 @@ canvas {
     display: none;
 }
 
-/* 📱 MOBILE OPTIMIZATION */
-@media (max-width: 768px) {
-
-    #info {
-        font-size: 11px;
-        text-align: center;
-    }
-
-    button {
-        flex: 1 1 30%;
-        font-size: 13px;
-        padding: 12px;
-    }
-
-    #controls {
-        gap: 6px;
-    }
-}
-
-/* 📱 LANDSCAPE MOBILE */
+/* LANDSCAPE MOBILE: HIDE INFO */
 @media (max-height: 500px) {
     #info {
         display: none;
@@ -127,7 +111,7 @@ canvas {
     <div id="controls">
         <button onclick="prevFrame()">⏮ Prev</button>
         <button onclick="nextFrame()">⏭ Next</button>
-        <button onclick="exportFrame()">📸 Export (BMP)</button>
+        <button onclick="exportFrame()">📸 Export</button>
     </div>
 
 </div>
@@ -135,6 +119,15 @@ canvas {
 <canvas id="canvas"></canvas>
 
 <script>
+/* 🔥 FIX MOBILE VIEWPORT HEIGHT */
+function setVH() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+setVH();
+window.addEventListener('resize', setVH);
+
+/* LOGIC */
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -167,7 +160,7 @@ function updateFrameSizeInfo() {
     const bytes = canvas.width * canvas.height * 3;
     const sizeMB = (bytes / (1024 * 1024)).toFixed(2);
     frameSizeEl.textContent =
-        `Frame Export: ${canvas.width}×${canvas.height} ≈ ${sizeMB} MB (BMP)`;
+        `Frame Export: ${canvas.width}×${canvas.height} ≈ ${sizeMB} MB`;
 }
 
 function drawFrame() {
